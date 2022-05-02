@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 using Poco::DateTimeFormat;
 using Poco::DateTimeFormatter;
@@ -106,17 +107,14 @@ public:
         response.setChunkedTransferEncoding(true);
         response.setContentType("application/json");
         std::ostream &ostr = response.send();
-
+        
         if (form.has("login"))
         {
-            std::string lg = form.get("login");
+            std::string  login = form.get("login");
             try
             {
-                auto results = database::Person::search(lg);
-                Poco::JSON::Array arr;
-                for (auto s : results)
-                    arr.add(s.toJSON());
-                Poco::JSON::Stringifier::stringify(arr, ostr);
+                database::Person result = database::Person::read_by_login(login);
+                Poco::JSON::Stringifier::stringify(result.toJSON(), ostr);
                 return;
             }
             catch (...)
@@ -131,7 +129,7 @@ public:
             {
                 std::string  fn = form.get("first_name");
                 std::string  ln = form.get("last_name");
-                auto results = database::Person::search(fn,ln);
+                auto results = database::Person::read_by_fn_ln(fn,ln);
                 Poco::JSON::Array arr;
                 for (auto s : results)
                     arr.add(s.toJSON());
@@ -152,10 +150,10 @@ public:
                         if (form.has("age"))
                         {
                             database::Person person;
-                            person.login() = form.get("login");
                             person.first_name() = form.get("first_name");
                             person.last_name() = form.get("last_name");
-                            person.age() = form.get("age");
+                            person.login() = form.get("login");
+                            person.age() = atoi(form.get("age").c_str());
 
                             bool check_result = true;
                             std::string message;

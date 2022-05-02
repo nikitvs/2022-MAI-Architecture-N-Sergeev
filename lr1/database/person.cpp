@@ -33,10 +33,10 @@ namespace database
             // (re)create table
             Statement create_stmt(session);
             create_stmt << "CREATE TABLE IF NOT EXISTS `Person` (`id` INT NOT NULL AUTO_INCREMENT,"
-                        << "`login` VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL,"
+                        << "`login` VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,"
                         << "`first_name` VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,"
                         << "`last_name` VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,"
-                        << "`age` VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,"
+                        << "`age` INT NOT NULL,"
                         << "PRIMARY KEY (`id`),KEY `fn` (`first_name`),KEY `ln` (`last_name`));",
                 now;
         }
@@ -78,9 +78,46 @@ namespace database
         person.login() = object->getValue<std::string>("login");
         person.first_name() = object->getValue<std::string>("first_name");
         person.last_name() = object->getValue<std::string>("last_name");
-        person.age() = object->getValue<std::string>("age");
+        person.age() = object->getValue<int>("age");
 
         return person;
+    }
+
+
+    Person Person::read_by_login(std::string login)
+    {
+        try
+        {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Poco::Data::Statement select(session);
+            Person a;
+            select << "SELECT id, login, first_name, last_name, age FROM Person where login LIKE ?",
+                into(a._id),
+                into(a._login),
+                into(a._first_name),
+                into(a._last_name),
+                into(a._age),
+                use(login),
+                range(0, 1); //  iterate over result set one row at a time
+  
+            select.execute();
+            Poco::Data::RecordSet rs(select);
+            if (!rs.moveFirst()) throw std::logic_error("not found");
+
+            return a;
+        }
+
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            throw;
+        }
     }
 
     std::vector<Person> Person::read_all()
@@ -91,7 +128,7 @@ namespace database
             Statement select(session);
             std::vector<Person> result;
             Person a;
-            select << "SELECT id, login, first_name, last_name, age FROM Person",
+            select << "SELECT id, login, first_name, last_name,  age FROM Person",
                 into(a._id),
                 into(a._login),
                 into(a._first_name),
@@ -120,44 +157,7 @@ namespace database
         }
     }
 
-    std::vector<Person> Person::search(std::string login)
-    {
-        try
-        {
-            Poco::Data::Session session = database::Database::get().create_session();
-            Statement select(session);
-            std::vector<Person> result;
-            Person a;
-            select << "SELECT id, login, first_name, last_name, age FROM Person where login LIKE ?",
-                into(a._id),
-                into(a._login),
-                into(a._first_name),
-                into(a._last_name),
-                into(a._age),
-                use(login),
-                range(0, 1); //  iterate over result set one row at a time
-
-            while (!select.done())
-            {
-                if(select.execute())  result.push_back(a);
-            }
-            return result;
-        }
-
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
-        }
-    }
-
-    std::vector<Person> Person::search(std::string first_name, std::string last_name)
+    std::vector<Person> Person::read_by_fn_ln(std::string first_name, std::string last_name)
     {
         try
         {
@@ -243,6 +243,11 @@ namespace database
         return _id;
     }
 
+    const std::string &Person::get_login() const
+    {
+        return _login;
+    }
+
     const std::string &Person::get_first_name() const
     {
         return _first_name;
@@ -253,12 +258,7 @@ namespace database
         return _last_name;
     }
 
-    const std::string &Person::get_login() const
-    {
-        return _login;
-    }
-
-    const std::string &Person::get_age() const
+    int Person::get_age() const
     {
         return _age;
     }
@@ -266,6 +266,11 @@ namespace database
     long &Person::id()
     {
         return _id;
+    }
+
+    std::string &Person::login()
+    {
+        return _login;
     }
 
     std::string &Person::first_name()
@@ -278,12 +283,7 @@ namespace database
         return _last_name;
     }
 
-    std::string &Person::login()
-    {
-        return _login;
-    }
-
-    std::string &Person::age()
+    int &Person::age()
     {
         return _age;
     }
