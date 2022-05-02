@@ -1,9 +1,0 @@
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/install/strip.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/install/local.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/edit_cache.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/package_source.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/install.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/list_install_components.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/rebuild_cache.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/package.dir
-/home/stud/workspace/architec/02/lr2/build/CMakeFiles/lr2.dir
