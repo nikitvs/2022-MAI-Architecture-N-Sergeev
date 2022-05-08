@@ -33,7 +33,6 @@ namespace database
 
             static void init();
             static std::vector<Person> read_by_login(std::string login);
-            // static std::vector<Person> read_all();
             static std::vector<Person> read_by_fn_ln(std::string first_name,std::string last_name);
             void save_to_mysql();
 
